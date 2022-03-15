@@ -131,8 +131,8 @@ defmodule Backsol.LicenseController do
   defp generate_license(data) do
     case data.type do
       "offline" ->
-        offHwData = decryption_license(data.offlineKey, "OFFLINEKEY")
-        encryption_license(data |> Map.merge(%{host: offHwData[:host], mac: offHwData[:mac]}) |> Map.delete(:offKey))
+        offHwData = decryption_license(data.offlineKey, "OFFLINEKEY") |> Jason.decode!()
+        encryption_license(data |> Map.merge(%{host: offHwData["host"], mac: offHwData["mac"]}) |> Map.delete(:offKey))
       _ -> encryption_license(data)
       end
   end
@@ -178,9 +178,15 @@ defmodule Backsol.LicenseController do
 
   end
 
-  defp decryption_license(message, key) do
-    <<k::binary-32, tag::binary-16, ct::binary>> = Base.decode16!(message)
-    # :crypto.block_decrypt(:aes_gcm, k, k, {key, ct, tag}) |> :erlang.binary_to_term
-    :crypto.crypto_one_time_aead(:aes_256_gcm, k, k, ct, key, tag, false) |> :erlang.binary_to_term
+  defp decryption_license(message, aad) do
+    IO.puts "good1"
+    key = "ID/RwsnZ3UhfScbnuZlVNW9BxjDeQne84T9fXOnEFOA=" |> Base.decode64!()
+    iv = message |> String.slice(0, 24) |> Base.decode64!()
+    IO.puts "good2"
+    auth_tag = message |> String.slice(24, 24) |> Base.decode64!()
+    IO.puts "good3"
+    cipher_text = message |> String.slice(48, String.length(message) - 48) |> Base.decode64!()
+    IO.puts "good4"
+    :crypto.crypto_one_time_aead(:aes_256_gcm, key, iv, cipher_text, aad, auth_tag, false)
   end
 end
