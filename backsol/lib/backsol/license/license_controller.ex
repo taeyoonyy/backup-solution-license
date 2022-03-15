@@ -157,11 +157,25 @@ defmodule Backsol.LicenseController do
           date: expirationDate
         }
     end
-    msg  = :erlang.term_to_binary(info)
-    k = :crypto.strong_rand_bytes(32)
+    # msg = :erlang.term_to_binary(info)
+    # k = :crypto.strong_rand_bytes(32)
     # {ct, tag} = :crypto.block_encrypt(:aes_gcm, k, k, {"EDGEHUB1290", msg})
-    {ct, tag} = :crypto.crypto_one_time_aead(:aes_256_gcm, k, k, msg, "EDGEHUB1290", true)
-    Base.encode16(k<> tag <> ct)
+
+    # edgehub version
+    # {ct, tag} = :crypto.crypto_one_time_aead(:aes_256_gcm, k, k, msg, "EDGEHUB1290", true)
+    # Base.encode16(k<> tag <> ct)
+
+    # psy version
+    key = "ID/RwsnZ3UhfScbnuZlVNW9BxjDeQne84T9fXOnEFOA=" |> Base.decode64!()
+    aad = "BACKUPSOLUTION"
+    message = info |> Jason.encode!()
+    iv = :crypto.strong_rand_bytes(16)
+    {cipher_text, auth_tag} = :crypto.crypto_one_time_aead(:aes_256_gcm, key, iv, message, aad, true)
+    iv_64 = Base.encode64(iv)
+    cipher_text_64 = Base.encode64(cipher_text)
+    auth_tag_64 = Base.encode64(auth_tag)
+    iv_64 <> auth_tag_64 <> cipher_text_64
+
   end
 
   defp decryption_license(message, key) do
