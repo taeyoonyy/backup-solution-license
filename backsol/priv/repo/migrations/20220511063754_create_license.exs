@@ -16,6 +16,7 @@ defmodule Backsol.Repo.Migrations.CreateLicense do
       add :managerName, :string
       add :managerMobile, :string
       add :comment, :string
+      add :created, :string
       timestamps(inserted_at: :createdAt, updated_at: :updatedAt)
     end
   end
