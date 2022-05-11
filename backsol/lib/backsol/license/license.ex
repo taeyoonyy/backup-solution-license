@@ -8,7 +8,7 @@ defmodule Backsol.License do
     field(:offlineKey, :string, size: 10000)
     field(:expirationDate, :string)
     field(:tagCount, :integer)
-    field(:userCount, :integer)
+    field(:category, :integer)
     field(:company, :string)
     field(:site, :string)
     field(:address, :string)

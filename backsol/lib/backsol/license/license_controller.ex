@@ -195,7 +195,7 @@ defmodule Backsol.LicenseController do
           %{
             type: data.type,
             tag: data.tagCount,
-            user: data.userCount,
+            user: data.category,
             expirationDate: expirationDate,
             createdDate: data.created,
             host: data.host,
@@ -206,7 +206,7 @@ defmodule Backsol.LicenseController do
           %{
             type: data.type,
             tag: data.tagCount,
-            user: data.userCount,
+            user: data.category,
             expirationDate: expirationDate,
             createdDate: data.created
           }

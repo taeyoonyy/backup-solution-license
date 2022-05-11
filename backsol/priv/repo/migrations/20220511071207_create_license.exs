@@ -9,7 +9,7 @@ defmodule Backsol.Repo.Migrations.CreateLicense do
       add :offlineKey, :string, size: 10000
       add :expirationDate, :string
       add :tagCount, :integer
-      add :userCount, :integer
+      add :category, :integer
       add :company, :string
       add :site, :string
       add :address, :string
