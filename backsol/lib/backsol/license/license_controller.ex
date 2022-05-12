@@ -16,6 +16,7 @@ defmodule Backsol.LicenseController do
     data =
       case data.type do
         "offline" -> data |> Map.put(:status, "approved")
+        "offlineLimited" -> data |> Map.put(:status, "approved")
         _ -> data |> Map.put(:status, "ready")
       end
 
@@ -171,8 +172,8 @@ defmodule Backsol.LicenseController do
   end
 
   defp generate_license(data) do
-    case data.type do
-      "offline" ->
+    cond do
+      ["offline", "offlineLimited"] |> Enum.member?(data.type) ->
         offHwData = decryption_license(data.offlineKey, "OFFLINEKEY") |> Jason.decode!()
 
         encryption_license(
@@ -181,32 +182,35 @@ defmodule Backsol.LicenseController do
           |> Map.delete(:offKey)
         )
 
-      _ ->
+      true ->
         encryption_license(data)
     end
   end
 
   defp encryption_license(data) do
-    expirationDate = if data.type == "limited", do: data.expirationDate, else: "unlimited"
+    expirationDate =
+      if ["onlineLimited", "offlineLimited"] |> Enum.member?(data.type),
+        do: data.expirationDate,
+        else: "unlimited"
 
     info =
-      case data.type do
-        "offline" ->
+      cond do
+        ["offline", "offlineLimited"] |> Enum.member?(data.type) ->
           %{
             type: data.type,
             tag: data.tagCount,
-            user: data.category,
+            category: data.category,
             expirationDate: expirationDate,
             createdDate: data.created,
             host: data.host,
             mac: data.mac
           }
 
-        _ ->
+        true ->
           %{
             type: data.type,
             tag: data.tagCount,
-            user: data.category,
+            category: data.category,
             expirationDate: expirationDate,
             createdDate: data.created
           }
