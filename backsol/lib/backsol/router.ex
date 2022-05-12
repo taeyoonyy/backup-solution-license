@@ -6,14 +6,15 @@ defmodule Backsol.Router do
   alias Backsol.HistoryController
   alias Backsol.AccountServer
 
-  plug Plug.Static,
+  plug(Plug.Static,
     at: "/",
     from: Path.expand("./dist"),
     only: ~w(css fonts images img js favicon.ico)
-  plug :match
-  plug Plug.Parsers, parsers: [:json], pass: ["application/json"], json_decoder: Jason
-  plug :dispatch
+  )
 
+  plug(:match)
+  plug(Plug.Parsers, parsers: [:json], pass: ["application/json"], json_decoder: Jason)
+  plug(:dispatch)
 
   post "/api/license/add" do
     with_valid_headers(conn, fn user ->
@@ -64,7 +65,6 @@ defmodule Backsol.Router do
     end)
   end
 
-
   ## API Frontend
   ## History
 
@@ -82,16 +82,14 @@ defmodule Backsol.Router do
     end)
   end
 
-
   put "/api/history/edit/:historyId" do
     with_valid_headers(conn, fn user ->
-      {status, resp_body} = HistoryController.history_comment_edit({conn.body_params["comment"], historyId, user})
+      {status, resp_body} =
+        HistoryController.history_comment_edit({conn.body_params["comment"], historyId, user})
+
       send_resp(conn, status, resp_body)
     end)
   end
-
-
-
 
   ## API Frontend
   ## Authentication
@@ -99,7 +97,6 @@ defmodule Backsol.Router do
   # FIRST USER CHECK
   get "/api/authentication/get/summary" do
     with_valid_headers(conn, fn _ ->
-
       {status, resp_body} = AccountController.get_summary()
       send_resp(conn, status, resp_body)
     end)
@@ -156,39 +153,43 @@ defmodule Backsol.Router do
       get_req_header(conn, "authorization")
       |> Enum.at(0)
       |> AccountController.logout()
+
     send_resp(conn, status, resp_body)
   end
-
 
   ## Backsol / License / Apply
-  post "/api/backsol/license/apply" do
-    {status, resp_body} = LicenseController.backsol_license_apply(conn.body_params, to_string(:inet_parse.ntoa(conn.remote_ip)))
+  post "/api/dex/license/apply" do
+    {status, resp_body} =
+      LicenseController.backsol_license_apply(
+        conn.body_params,
+        to_string(:inet_parse.ntoa(conn.remote_ip))
+      )
+
     send_resp(conn, status, resp_body)
   end
-
 
   # match _, do: send_resp(conn, 404, "404 error not found!")
   get "/management/*path" do
     serve_dist(conn)
   end
 
-  match _, do: send_resp(conn, 404, "404 error not found!")
-
+  match(_, do: send_resp(conn, 404, "404 error not found!"))
 
   defp with_valid_headers(conn, action) do
     token = get_req_header(conn, "authorization") |> Enum.at(0)
-    is_token =  token |> AccountServer.check_token
+    is_token = token |> AccountServer.check_token()
+
     if is_token do
       user = Joken.peek_claims(token) |> elem(1) |> Map.get("id")
       action.(user)
     else
-      send_resp(conn, 200, %{status: "error", result: "invalid token"} |> Jason.encode!)
+      send_resp(conn, 200, %{status: "error", result: "invalid token"} |> Jason.encode!())
     end
   end
 
   def serve_dist(conn) do
-    path = File.cwd! <> "/dist/index.html"
-    {:ok, content} = path |> File.read
+    path = File.cwd!() <> "/dist/index.html"
+    {:ok, content} = path |> File.read()
     send_resp(conn, 200, content)
   end
 end
