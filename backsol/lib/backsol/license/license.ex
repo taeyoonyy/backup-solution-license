@@ -14,7 +14,7 @@ defmodule Backsol.License do
     field(:address, :string)
     field(:managerName, :string)
     field(:managerMobile, :string)
-    field(:comment, :string)
+    field(:comment, :string, size: 2000)
     field(:created, :string)
     timestamps(inserted_at: :createdAt, updated_at: :updatedAt)
   end
