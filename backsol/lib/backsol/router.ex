@@ -158,7 +158,7 @@ defmodule Backsol.Router do
   end
 
   ## Backsol / License / Apply
-  post "/api/dex/license/apply" do
+  post "/api/license/apply" do
     {status, resp_body} =
       LicenseController.backsol_license_apply(
         conn.body_params,
